@@ -1,17 +1,19 @@
 #include "chip8.h"
 
-/* global chip8state, local to this file */
-static chip8state chip8;
-
 /* initializes chip8state to correct initial values */
-void chip8init(void)
+void chip8init(chip8state *chip8)
 {
     //TODO: finish initialization
-    chip8.pc = 0x200;
+    chip8->I = 0;
+    chip8->pc = 0x200;
+    chip8->delay = 0;
+    chip8->sound = 0;
+    chip8->sp = 0;
+    chip8->opcode = 0;
 }
 
 /* reads file into memory byte by byte */
-void program(char* filename)
+void program(char *filename, chip8state *chip8)
 {
     FILE *fp = fopen(filename, "r");
 
@@ -32,82 +34,112 @@ void program(char* filename)
         }
         
         // write the char into memory
-        chip8.memory[pc] = (unsigned char) c;
+        chip8->memory[pc] = (unsigned char) c;
         pc++;
     }
+    fclose(fp);
 }
 
 /* reads next two chars from memory, then increments pc by 2 */
-void fetch(void)
+void fetch(chip8state *chip8)
 {
     // left shifting higher address (MSB = leftmost bit) 
-    chip8.opcode = (chip8.memory[chip8.pc]) | (chip8.memory[chip8.pc + 1] << 8);
-    chip8.pc += 2;
+    chip8->opcode = (chip8->memory[chip8->pc]) | (chip8->memory[chip8->pc + 1] << 8);
+    chip8->pc += 2;
 }
 
 /* executes the current instruction */
-void execute(void)
+void execute(chip8state *chip8)
 {
-    return;
+    unsigned char highnib = ((0xF000) & (chip8->opcode)) >> 12;
+    unsigned char lownib = (0x000F) & (chip8->opcode);
+    switch(highnib)
+    {
+        case(0):
+            {
+                if (lownib == 0)
+                {
+                    unhandledInstruction("CLS", chip8);
+                }
+                else if (lownib == 0xE)
+                {
+                    unhandledInstruction("RET", chip8);
+                }
+                else
+                {
+                    unhandledInstruction("SYS addr", chip8);
+                }
+                break;
+            }
+        default:
+            unhandledInstruction("Unknown mnemonic", chip8);
+    }
+
 }
 
 /*********** Helper functions *********************************/
 /* function to read from memory */
-unsigned char readMem(int address)
+unsigned char readMem(int address, chip8state *chip8)
 {
     if (address >= 0 && address <= 4096)
     {
-        return chip8.memory[address];
+        return chip8->memory[address];
     }
     else
     {
-        printError("Memory access error.");
+        printError("Memory access error.", chip8);
         return -1;
     }
 }
 
 /* writes to specified memory address */
-void writeMem(int address, unsigned char val)
+void writeMem(int address, unsigned char val, chip8state *chip8)
 {
     if (address >= 0 && address <= 4096)
     {
-        chip8.memory[address] = val;
+        chip8->memory[address] = val;
     }
     else
     {
-        printError("Memory access error.");
+        printError("Memory access error.", chip8);
     }
 }
 
 /* reads from register Vx */
-unsigned char readReg(int x)
+unsigned char readReg(int x, chip8state *chip8)
 {
     if (x >= 0 && x <= 15)
     {
-        return chip8.V[x];
+        return chip8->V[x];
     }
     else
     {
-        printError("Register access errror.");
+        printError("Register access errror.", chip8);
         return -1;
     }
 }
 
 /* writes value to register Vx */
-void writeReg(int x, unsigned char val)
+void writeReg(int x, unsigned char val, chip8state *chip8)
 {
     if (x >= 0 && x <= 15)
     {
-        chip8.V[x] = val;
+        chip8->V[x] = val;
     }
     else
     {
-        printError("Register access error.");
+        printError("Register access error.", chip8);
     }
 }
 
+/* Prints out opcode of unhandled instruction */
+void unhandledInstruction(char *msg, chip8state *chip8)
+{
+    printf("Unhandled instruction: %s; %04x\n", msg, chip8->opcode);
+}
+
 /* helper function, for debugging/testing */
-void printMemory(int address, int period)
+void printMemory(int address, int period, chip8state *chip8)
 {
     int count = 0;
     char c = 0;
@@ -119,7 +151,7 @@ void printMemory(int address, int period)
         // printing out memory locations, 16 per line
         for (count = 0; count <= period; count++)
         {
-            printf("%02x", chip8.memory[address + count]);
+            printf("%02x", chip8->memory[address + count]);
             
             // formatting - tabs every 8th, endline every 16th
             if ( (count+1) % 2 == 0) 
@@ -148,14 +180,14 @@ void printMemory(int address, int period)
     }
 }
 
-void printOpcode(void)
+void printOpcode(chip8state *chip8)
 {
-    printf("%04x\n", chip8.opcode);
+    printf("%04x\n", chip8->opcode);
 }
 
 /* printing error msg w/ current pc, opcode */
-void printError(char *msg)
+void printError(char *msg, chip8state *chip8)
 {
-    printf("PC: %04x; opcode: %04x; %s", chip8.pc, chip8.opcode, msg);
+    printf("PC: %04x; opcode: %04x; %s", chip8->pc, chip8->opcode, msg);
     exit(1);
 }

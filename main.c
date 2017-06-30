@@ -7,23 +7,25 @@ int main(int argc, char **argv)
         printf("Error: no filename included\n");
         exit(1);
     }
-
-    chip8init();
+    chip8state *chip8;
+    chip8init(chip8);
     char *filename = argv[1];
-    program(filename);
-    printMemory(0x200, 63);
-
-    writeMem(0x200, 0xff);
-    printf("%x\n", readMem(0x200));
-
-    writeMem(0x200, 0x01);
-    printf("%x\n", readMem(0x200));
-
-    writeReg(0, 0xff);
-    printf("%x\n", readReg(0));
-
-    writeReg(0, 0x2b);
-    printf("%x\n", readReg(0));
-
+    program(filename, chip8);
+    
+    char c = 0;
+    while (1)
+    {
+        fetch(chip8);
+        execute(chip8);
+        
+        printf("Press enter to continue, anything else to exit: ");
+        c = getchar();
+        if (c != '\n' && c != '\r')
+        {
+            printf("Exiting\n");
+            break;
+        }
+    }
+        
     return 0;
 }

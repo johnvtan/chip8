@@ -27,16 +27,17 @@ typedef struct
 
 /* main functions */
 // loads program in file into memory
-void chip8init(void);
-void program(char* filename);
-void fetch(void);
-void execute(void);
+void chip8init(chip8state *chip8);
+void program(char* filename, chip8state* chip8);
+void fetch(chip8state* chip8);
+void execute(chip8state* chip8);
 
 /* helper functions */
-unsigned char readMem(int address);
-void writeMem(int address, unsigned char val);
-unsigned char readReg(int x);
-void writeReg(int x, unsigned char val);
-void printMemory(int address, int period);
-void printOpcode(void);
-void printError(char *msg);
+unsigned char readMem(int address, chip8state* chip8);
+void writeMem(int address, unsigned char val, chip8state* chip8);
+unsigned char readReg(int x, chip8state* chip8);
+void writeReg(int x, unsigned char val, chip8state* chip8);
+void unhandledInstruction(char *msg, chip8state* chip8);
+void printMemory(int address, int period, chip8state* chip8);
+void printOpcode(chip8state* chip8);
+void printError(char *msg, chip8state* chip8);
