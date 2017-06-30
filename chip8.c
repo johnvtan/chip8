@@ -44,7 +44,7 @@ void program(char *filename, chip8state *chip8)
 void fetch(chip8state *chip8)
 {
     // left shifting higher address (MSB = leftmost bit) 
-    chip8->opcode = (chip8->memory[chip8->pc]) | (chip8->memory[chip8->pc + 1] << 8);
+    chip8->opcode = (chip8->memory[chip8->pc] << 8) | (chip8->memory[chip8->pc + 1]);
     chip8->pc += 2;
 }
 
@@ -57,6 +57,7 @@ void execute(chip8state *chip8)
     {
         case(0):
             {
+                /*
                 if (lownib == 0)
                 {
                     unhandledInstruction("CLS", chip8);
@@ -70,7 +71,169 @@ void execute(chip8state *chip8)
                     unhandledInstruction("SYS addr", chip8);
                 }
                 break;
+                */
+                switch(lownib)
+                {
+                    case(0):
+                        {
+                            unhandledInstruction("CLS", chip8);
+                            break;
+                        }
+                    case(0xE):
+                        {
+                            unhandledInstruction("RET", chip8);
+                            break;
+                        }
+                    default:
+                        unhandledInstruction("SYS addr", chip8);
+                }
+                break;
             }
+        case(1):
+            {
+                unhandledInstruction("JP", chip8);
+                break;
+            }
+        case(2):
+            {
+                unhandledInstruction("CALL", chip8);
+                break;
+            }
+        case(3):
+            {
+                unhandledInstruction("SE Vx, byte", chip8);
+                break;
+            }
+        case(4):
+            {
+                unhandledInstruction("SNE Vx, byte", chip8);
+                break;
+            }
+        case(5):
+            {
+                unhandledInstruction("SE Vx, Vy", chip8);
+                break;
+            }
+        case(6):
+            {
+                unhandledInstruction("LD Vx, byte", chip8);
+                break;
+            }
+        case(7):
+            {
+                unhandledInstruction("ADD Vx, byte", chip8);
+                break;
+            }
+        case(8):
+            {
+              switch (lownib)
+              {
+                  case(0):
+                      {
+                          unhandledInstruction("LD Vx, Vy", chip8);
+                          break;
+                      }
+                  case(1):
+                      {
+                          unhandledInstruction("OR Vx, Vy", chip8);
+                          break;
+                      }
+                  case(2):
+                      {
+                          unhandledInstruction("AND Vx, Vy", chip8);
+                          break;
+                      }
+                  case(3):
+                      {
+                          unhandledInstruction("XOR Vx, Vy", chip8);
+                          break;
+                      }
+                  case(4):
+                      {
+                          unhandledInstruction("ADD Vx, Vy", chip8);
+                          break;
+                      }
+                  case(5):
+                      {
+                          unhandledInstruction("SUB Vx, Vy", chip8);
+                          break;
+                      }
+                  case(6):
+                      {
+                          unhandledInstruction("SHR Vx", chip8);
+                          break;
+                      }
+                  case(7):
+                      {
+                          unhandledInstruction("SUBN Vx, Vy", chip8);
+                          break;                            
+                      }
+                  case(0xE):
+                      {
+                          unhandledInstruction("SHL Vx, Vy", chip8);
+                          break;
+                      }
+                  default:
+                      {
+                          unhandledInstruction("Unknown mnemonic", chip8);
+                          break;
+                      }
+              } 
+              break;
+            }
+        case(9):
+            {
+                unhandledInstruction("SNE Vx, Vy", chip8);
+                break;
+            }
+        case(0xA):
+            {
+                unhandledInstruction("LD I, addr", chip8);
+                break;
+            }
+        case(0xB):
+            {
+                unhandledInstruction("JP V0, addr", chip8);
+                break;
+            }
+        case(0xC):
+            {
+                unhandledInstruction("RND Vx, byte", chip8);
+                break;
+            }
+        case(0xD):
+            {
+                unhandledInstruction("DRW Vx, Vy, nibble", chip8);
+                break;
+            }
+        case(0xE):
+            {
+                switch(lownib)
+                {
+                    case(0xE):
+                        {
+                            unhandledInstruction("SKP Vx", chip8);
+                            break;
+                        }
+                    case(1):
+                        {
+                            unhandledInstruction("SKNP Vx", chip8);
+                            break;
+                        }
+                    default:
+                        {
+                            unhandledInstruction("Unknown Mnemonic", chip8);
+                            break;
+                        }
+                }
+                break;
+            }
+        case(0xF):
+            {
+                unhandledInstruction("Weird 0xF instruction", chip8);
+                break;
+            }
+
         default:
             unhandledInstruction("Unknown mnemonic", chip8);
     }
