@@ -3,6 +3,15 @@
 #include <stdlib.h>
 //#include "instructions.h"
 
+/* MACRO DEFINITIONS */
+// GET_X, GET_Y cast as ints since they are used as indexes
+#define GET_X(opcode) (int) ((opcode & 0x0F00) >> 8)
+#define GET_Y(opcode) (int) ((opcode & 0x00F0) >> 4)
+
+// GET_KK, GET_NNN cast as char, short to fit the data size
+#define GET_KK(opcode) (unsigned char) (opcode & 0x00FF)
+#define GET_NNN(opcode) (unsigned short) (opcode & 0x0FFF)
+
 /* important to note that short is 2 bytes, long is 4 bytes */
 
 typedef struct 

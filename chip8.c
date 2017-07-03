@@ -57,21 +57,6 @@ void execute(chip8state *chip8)
     {
         case(0):
             {
-                /*
-                if (lownib == 0)
-                {
-                    unhandledInstruction("CLS", chip8);
-                }
-                else if (lownib == 0xE)
-                {
-                    unhandledInstruction("RET", chip8);
-                }
-                else
-                {
-                    unhandledInstruction("SYS addr", chip8);
-                }
-                break;
-                */
                 switch(lownib)
                 {
                     case(0):
@@ -91,7 +76,8 @@ void execute(chip8state *chip8)
             }
         case(1):
             {
-                unhandledInstruction("JP", chip8);
+                // JP to nnn - set pc to 3 least sig digits
+                chip8->pc = (chip8->opcode) & (0x0FFF); 
                 break;
             }
         case(2):
@@ -101,81 +87,178 @@ void execute(chip8state *chip8)
             }
         case(3):
             {
-                unhandledInstruction("SE Vx, byte", chip8);
+                // SE Vx, byte - pc += 2 if V[x] == kk
+                // TODO: check to make sure value of x is being retrieved correctly
+                // Make new MACRO - GET_X, GET_Y
+                unsigned int x = GET_X(chip8->opcode);
+                unsigned char kk = GET_KK(chip8->opcode);
+                if (readReg(x, chip8) == kk)
+                {
+                    chip8->pc += 2;
+                }
                 break;
             }
         case(4):
             {
-                unhandledInstruction("SNE Vx, byte", chip8);
+                // SNE Vx, byte - pc += 2 if V[x] != kk
+                unsigned int x = GET_X(chip8->opcode);
+                unsigned char kk = GET_KK(chip8->opcode);
+                if (readReg(x, chip8) != kk)
+                {
+                    chip8->pc += 2;
+                }
                 break;
             }
         case(5):
             {
-                unhandledInstruction("SE Vx, Vy", chip8);
+                // SE Vx, Vy - pc += 2 if V[x} == V[y]
+                unsigned int x = GET_X(chip8->opcode);
+                unsigned int y = GET_Y(chip8->opcode);
+                if (readReg(x, chip8) == readReg(y, chip8))
+                {
+                    chip8->pc += 2;
+                }
                 break;
             }
         case(6):
             {
-                unhandledInstruction("LD Vx, byte", chip8);
+                // LD Vx, byte - V[x] == kk
+                unsigned int x = GET_X(chip8->opcode);
+                unsigned char kk = GET_KK(chip8->opcode);
+                writeReg(x, kk, chip8);
                 break;
             }
         case(7):
             {
-                unhandledInstruction("ADD Vx, byte", chip8);
+                // ADD Vx, byte - Vx = Vx + kk
+                unsigned int x = GET_X(chip8->opcode);
+                unsigned char kk = GET_KK(chip8->opcode);
+                unsigned char val = readReg(x, chip8) + kk;
+                writeReg(x, val, chip8);
                 break;
             }
         case(8):
             {
-              switch (lownib)
-              {
+                unsigned int x = GET_X(chip8->opcode);
+                unsigned int y = GET_Y(chip8->opcode);
+                switch (lownib)
+                {
                   case(0):
                       {
-                          unhandledInstruction("LD Vx, Vy", chip8);
+                          // LD Vx, Vy - Vx = Vy
+                          unsigned char val = readReg(y, chip8);
+                          writeReg(x, val, chip8);
                           break;
                       }
                   case(1):
                       {
-                          unhandledInstruction("OR Vx, Vy", chip8);
+                          // OR Vx, Vy - Vx = Vx OR Vy
+                          unsigned char val = readReg(y, chip8) | readReg(x, chip8);
+                          writeReg(x, val, chip8);
                           break;
                       }
                   case(2):
                       {
-                          unhandledInstruction("AND Vx, Vy", chip8);
+                          // AND Vx, Vy - Vx = Vx AND Vy
+                          unsigned char val = readReg(y, chip8) & readReg(x, chip8);
+                          writeReg(x, val, chip8);
                           break;
                       }
                   case(3):
                       {
-                          unhandledInstruction("XOR Vx, Vy", chip8);
+                          // XOR Vx, Vy - Vx = Vx XOR Vy
+                          unsigned char val = readReg(y, chip8) ^ readReg(x, chip8);
+                          writeReg(x, val, chip8);
                           break;
                       }
                   case(4):
                       {
-                          unhandledInstruction("ADD Vx, Vy", chip8);
+                          // ADD Vx, Vy - Vx = Vx + Vy, VF = carry
+                          unsigned char val = readReg(y, chip8) + readReg(x, chip8);
+                          
+                          // does this set VF correctly? how else can we check?
+                          if (val < readReg(y, chip8) || val < readReg(x, chip8))
+                          {
+                              writeReg(0xF, 1, chip8);
+                          }
+                          else
+                          {
+                              writeReg(0xF, 0, chip8);
+                          }
+                          writeReg(x, val, chip8);
                           break;
                       }
                   case(5):
                       {
-                          unhandledInstruction("SUB Vx, Vy", chip8);
+                          // SUB Vx, Vy - Vx = Vx - Vy, VF = NOT borrow
+                          unsigned char val = readReg(x, chip8) - readReg(y, chip8);
+
+                          // setting VF if necessary
+                          if (readReg(x, chip8) < readReg(y, chip8))
+                          {
+                              writeReg(0xF, 1, chip8);
+                          }
+                          else
+                          {
+                              writeReg(0xF, 0, chip8);
+                          }
+                          writeReg(x, val, chip8);
                           break;
                       }
                   case(6):
                       {
-                          unhandledInstruction("SHR Vx", chip8);
+                          // SHR Vx, Vx = Vx >> 1, VF = lsb of Vx
+                          unsigned char val = readReg(x, chip8) >> 1;
+                          
+                          // checking lsb of Vx
+                          if ((readReg(x, chip8) & 1) == 1)
+                          {
+                              writeReg(0xF, 1, chip8);
+                          }
+                          else
+                          {
+                              writeReg(0xF, 0, chip8);
+                          }
+                          writeReg(x, val, chip8);
                           break;
                       }
                   case(7):
                       {
-                          unhandledInstruction("SUBN Vx, Vy", chip8);
+                          // SUBN Vx, Vy - Vx = Vy - Vx
+                          unsigned char val = readReg(y, chip8) - readReg(x, chip8);
+
+                          // setting VF if necessary
+                          if (readReg(y, chip8) < readReg(x, chip8))
+                          {
+                              writeReg(0xF, 1, chip8);
+                          }
+                          else
+                          {
+                              writeReg(0xF, 0, chip8);
+                          }
+                          writeReg(x, val, chip8);
                           break;                            
                       }
                   case(0xE):
                       {
-                          unhandledInstruction("SHL Vx, Vy", chip8);
+                          // SHL Vx, Vx = Vx << 1
+                          unsigned char val = readReg(x, chip8) << 1;
+
+                          // VF stuff - is 0x80 correct? TODO
+                          if ((readReg(x, chip8) & 0x80) == 1)
+                          {
+                              writeReg(0xF, 1, chip8);
+                          }
+                          else
+                          {
+                              writeReg(0xF, 0, chip8);
+                          }
+                          writeReg(x, val, chip8);
                           break;
                       }
                   default:
                       {
-                          unhandledInstruction("Unknown mnemonic", chip8);
+                          printError("Unknown mnemonic", chip8);
                           break;
                       }
               } 
@@ -183,17 +266,25 @@ void execute(chip8state *chip8)
             }
         case(9):
             {
-                unhandledInstruction("SNE Vx, Vy", chip8);
+                // SNE Vx, Vy - pc += 2 if Vx != vY
+                unsigned int x = GET_X(chip8->opcode);
+                unsigned int y = GET_Y(chip8->opcode);
+                if (readReg(x, chip8) != readReg(y, chip8))
+                {
+                    chip8->pc += 2;
+                }
                 break;
             }
         case(0xA):
             {
-                unhandledInstruction("LD I, addr", chip8);
+                // LD I, addr
+                chip8->I = GET_NNN(chip8->opcode);
                 break;
             }
         case(0xB):
             {
-                unhandledInstruction("JP V0, addr", chip8);
+                // JP V0, addr - pc = V[0] + nnn
+                chip8->pc = readReg(0, chip8) + GET_NNN(chip8->opcode);
                 break;
             }
         case(0xC):
@@ -222,7 +313,7 @@ void execute(chip8state *chip8)
                         }
                     default:
                         {
-                            unhandledInstruction("Unknown Mnemonic", chip8);
+                            printError("Unknown Mnemonic", chip8); 
                             break;
                         }
                 }
@@ -235,7 +326,7 @@ void execute(chip8state *chip8)
             }
 
         default:
-            unhandledInstruction("Unknown mnemonic", chip8);
+            printError("Unknown mnemonic", chip8);
     }
 
 }

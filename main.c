@@ -7,6 +7,7 @@ int main(int argc, char **argv)
         printf("Error: no filename included\n");
         exit(1);
     }
+
     chip8state *chip8;
     chip8init(chip8);
     char *filename = argv[1];
