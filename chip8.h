@@ -4,6 +4,15 @@
 //#include "instructions.h"
 
 /* MACRO DEFINITIONS */
+// DEBUG stuff - used -DDEBUG flag when compiling to turn this on
+#ifdef DEBUG
+// the do-while loop ensures that the code acts like a function call?
+// so a call would be like DEBUG_PRINT("%s, %s", s1, s2)
+#define DEBUG_PRINT(fmt, ...) do{ fprintf(stderr, fmt, __VA_ARGS__); } while(0)
+#else
+#define DEBUG_PRINT(...)  // do nothing if not in debug mode
+#endif
+
 // GET_X, GET_Y cast as ints since they are used as indexes
 #define GET_X(opcode) (int) ((opcode & 0x0F00) >> 8)
 #define GET_Y(opcode) (int) ((opcode & 0x00F0) >> 4)

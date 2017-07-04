@@ -14,17 +14,26 @@ int main(int argc, char **argv)
     program(filename, chip8);
     
     char c = 0;
+    if (DEBUG)
+    {
+        printf("Debug mode! Press enter to step through the instructions.\n");
+    }
+
     while (1)
     {
         fetch(chip8);
         execute(chip8);
         
-        printf("Press enter to continue, anything else to exit: ");
-        c = getchar();
-        if (c != '\n' && c != '\r')
+        if(DEBUG)
         {
-            printf("Exiting\n");
-            break;
+            //printf("Press enter to continue, anything else to exit: ");
+            printOpcode(chip8);
+            c = getchar();
+            if (c != '\n' && c != '\r')
+            {
+                printf("Exiting\n");
+                break;
+            }
         }
     }
         

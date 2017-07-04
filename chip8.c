@@ -335,6 +335,7 @@ void execute(chip8state *chip8)
 /* function to read from memory */
 unsigned char readMem(int address, chip8state *chip8)
 {
+    DEBUG_PRINT("Opcode: %04x, reading from address %x\n", chip8->opcode, address);
     if (address >= 0 && address <= 4096)
     {
         return chip8->memory[address];
@@ -349,6 +350,7 @@ unsigned char readMem(int address, chip8state *chip8)
 /* writes to specified memory address */
 void writeMem(int address, unsigned char val, chip8state *chip8)
 {
+    DEBUG_PRINT("Opcode: %04x, writing val 0x%x to address 0x%x\n", chip8->opcode, val, address);
     if (address >= 0 && address <= 4096)
     {
         chip8->memory[address] = val;
@@ -362,6 +364,7 @@ void writeMem(int address, unsigned char val, chip8state *chip8)
 /* reads from register Vx */
 unsigned char readReg(int x, chip8state *chip8)
 {
+    DEBUG_PRINT("Opcode: %04x, reading from reg %x\n", chip8->opcode, x);
     if (x >= 0 && x <= 15)
     {
         return chip8->V[x];
@@ -376,6 +379,7 @@ unsigned char readReg(int x, chip8state *chip8)
 /* writes value to register Vx */
 void writeReg(int x, unsigned char val, chip8state *chip8)
 {
+    DEBUG_PRINT("Opcode: %04x, writing val 0x%x to reg 0x%x\n", chip8->opcode, val, x);
     if (x >= 0 && x <= 15)
     {
         chip8->V[x] = val;
@@ -442,6 +446,6 @@ void printOpcode(chip8state *chip8)
 /* printing error msg w/ current pc, opcode */
 void printError(char *msg, chip8state *chip8)
 {
-    printf("PC: %04x; opcode: %04x; %s", chip8->pc, chip8->opcode, msg);
+    fprintf(stderr, "PC: %04x; opcode: %04x; %s", chip8->pc, chip8->opcode, msg);
     exit(1);
 }
