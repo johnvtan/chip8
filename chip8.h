@@ -1,3 +1,5 @@
+#ifndef CHIP8_H
+#define CHIP8_H
 /* includes types, instantiations of all the chip8 parts */
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,3 +61,5 @@ void unhandledInstruction(char *msg, chip8state* chip8);
 void printMemory(int address, int period, chip8state* chip8);
 void printOpcode(chip8state* chip8);
 void printError(char *msg, chip8state* chip8);
+
+#endif
