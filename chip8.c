@@ -4,6 +4,10 @@
 void chip8init(chip8state *chip8)
 {
     //TODO: finish initialization
+    // setting all registers, memory back to 0
+    // memset for V works, but memset for memory fails. why?
+    memset(chip8->V, 0, 16 * sizeof(unsigned char));
+    memset(chip8->memory, 0, 4096 * sizeof(unsigned char));
     chip8->I = 0;
     chip8->pc = 0x200;
     chip8->delay = 0;
@@ -194,7 +198,7 @@ void execute(chip8state *chip8)
                           unsigned char val = readReg(x, chip8) - readReg(y, chip8);
 
                           // setting VF if necessary
-                          if (readReg(x, chip8) < readReg(y, chip8))
+                          if (readReg(x, chip8) > readReg(y, chip8))
                           {
                               writeReg(0xF, 1, chip8);
                           }
@@ -228,7 +232,7 @@ void execute(chip8state *chip8)
                           unsigned char val = readReg(y, chip8) - readReg(x, chip8);
 
                           // setting VF if necessary
-                          if (readReg(y, chip8) < readReg(x, chip8))
+                          if (readReg(y, chip8) > readReg(x, chip8))
                           {
                               writeReg(0xF, 1, chip8);
                           }
@@ -245,7 +249,7 @@ void execute(chip8state *chip8)
                           unsigned char val = readReg(x, chip8) << 1;
 
                           // VF stuff - is 0x80 correct? TODO
-                          if ((readReg(x, chip8) & 0x80) == 1)
+                          if ((readReg(x, chip8) & 0x80) == 0x80)
                           {
                               writeReg(0xF, 1, chip8);
                           }

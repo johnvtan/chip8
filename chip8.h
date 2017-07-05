@@ -3,6 +3,7 @@
 /* includes types, instantiations of all the chip8 parts */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> // for memset
 //#include "instructions.h"
 
 /* MACRO DEFINITIONS */

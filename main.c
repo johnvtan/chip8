@@ -12,7 +12,9 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    chip8state *chip8;
+    // forgot to malloc pointer, so it was uninitialized, which caused segfaults
+    // when trying to memset memory and V
+    chip8state *chip8 = malloc(sizeof(chip8state));
     chip8init(chip8);
     char *filename = argv[1];
    
