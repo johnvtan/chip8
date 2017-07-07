@@ -1,7 +1,10 @@
 #include <string.h>
 #include "chip8.h"
-#ifdef DEBUG
-#   include "test.h"
+#include "test.h"
+
+
+#ifndef DEBUG
+#define DEBUG 0
 #endif
 
 int main(int argc, char **argv)
@@ -37,10 +40,48 @@ int main(int argc, char **argv)
         printf("Debug mode! Press enter to step through the instructions.\n");
     }
 
+    uint64_t delta_us = 0;
+    struct timespec start_tp, end_tp; // used for keeping time
+    clock_gettime(CLOCK_REALTIME, &start_tp);    
+    
+    /*
+    int n_exe = 0;
+    chip8.delay = 200;
+    */
+    
     while (1)
     {
         fetch(&chip8);
         execute(&chip8);
+       
+        //n_exe++;
+        
+        // calculating how much time has passed
+        clock_gettime(CLOCK_REALTIME, &end_tp);
+
+        // checking if current time > 16666 us (ie, ~1/60 of 1 sec)
+        delta_us = (end_tp.tv_sec - start_tp.tv_sec) * 1000000 + (end_tp.tv_nsec - start_tp.tv_nsec) / 1000;
+
+        if ((delta_us) > 16666)
+        {
+
+            if (chip8.delay > 0)
+            {
+                chip8.delay--;
+            }
+            if (chip8.sound > 0)
+            {
+                chip8.sound--;
+            }
+            
+           
+            /*
+            printf("# cycles: %d\t, delay: %d\n", n_exe, chip8.delay);
+            n_exe = 0;
+            */
+            // resetting count
+            start_tp = end_tp;
+        }
         
         // Debug mode just makes the program step through the instructions
         // one at a time
