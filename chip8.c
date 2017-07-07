@@ -8,12 +8,16 @@ void chip8init(chip8state *chip8)
     // memset for V works, but memset for memory fails. why?
     memset(chip8->V, 0, 16 * sizeof(unsigned char));
     memset(chip8->memory, 0, 4096 * sizeof(unsigned char));
+    memset(chip8->stack, 0, 16 * sizeof(unsigned short));
     chip8->I = 0;
     chip8->pc = 0x200;
     chip8->delay = 0;
     chip8->sound = 0;
     chip8->sp = 0;
     chip8->opcode = 0;
+    
+    // seeding rng
+    srand(time(NULL));
 }
 
 /* reads file into memory byte by byte */
@@ -65,12 +69,16 @@ void execute(chip8state *chip8)
                 {
                     case(0):
                         {
-                            unhandledInstruction("CLS", chip8);
+                            // Clear screen
+                            memset(chip8->graphics, 0, 64*32*sizeof(unsigned char));
+                            // TODO: call draw screen function to clear this out
                             break;
                         }
                     case(0xE):
                         {
-                            unhandledInstruction("RET", chip8);
+                            // Return from func
+                            chip8->pc = chip8->stack[chip8->sp];
+                            chip8->sp--;
                             break;
                         }
                     default:
@@ -81,12 +89,15 @@ void execute(chip8state *chip8)
         case(1):
             {
                 // JP to nnn - set pc to 3 least sig digits
-                chip8->pc = (chip8->opcode) & (0x0FFF); 
+                chip8->pc = GET_NNN(chip8->opcode);
                 break;
             }
         case(2):
             {
-                unhandledInstruction("CALL", chip8);
+                // CALL addr
+                chip8->sp++;
+                chip8->stack[chip8->sp] = chip8->pc;
+                chip8->pc = GET_NNN(chip8->opcode);
                 break;
             }
         case(3):
@@ -293,7 +304,10 @@ void execute(chip8state *chip8)
             }
         case(0xC):
             {
-                unhandledInstruction("RND Vx, byte", chip8);
+                // RND Vx, byte - set Vx = random byte & kk
+                int x = GET_X(chip8->opcode);
+                unsigned char val = ((unsigned char) rand()%256) & GET_KK(chip8->opcode); 
+                writeReg(x, val, chip8);
                 break;
             }
         case(0xD):
@@ -325,7 +339,72 @@ void execute(chip8state *chip8)
             }
         case(0xF):
             {
-                unhandledInstruction("Weird 0xF instruction", chip8);
+                switch (chip8->opcode & 0x00FF)
+                {
+                    case(0x07):
+                        {
+                            // LD Vx, DT
+                            int x = GET_X(chip8->opcode);
+                            writeReg(x, chip8->delay, chip8);
+                            break;
+                        }
+                    case(0x0A):
+                        {
+                            unhandledInstruction("LD Vx, K", chip8);
+                            break;
+                        }
+                    case(0x15):
+                        {
+                            // LD DT, Vx
+                            int x = GET_X(chip8->opcode);
+                            chip8->delay = readReg(x, chip8);
+                            break;
+                        }
+                    case(0x18):
+                        {
+                            // LD ST, Vx
+                            int x = GET_X(chip8->opcode);
+                            chip8->sound = readReg(x, chip8);
+                            break;
+                        }
+                    case(0x1E):
+                        {
+                            // ADD I, Vx
+                            int x = GET_X(chip8->opcode);
+                            chip8->I = chip8->I + readReg(x, chip8);
+                            break;
+                        }
+                    case(0x29):
+                        {
+                            unhandledInstruction("LD F, Vx", chip8);
+                            break;
+                        }
+                    case(0x33):
+                        {
+                            unhandledInstruction("LD B, Vx", chip8);
+                            break;
+                        }
+                    case(0x55):
+                        {
+                            // LD [I], Vx
+                            int x = GET_X(chip8->opcode);
+                            for (int i = chip8->I; i < (chip8->I+x); i++)
+                            {
+                                writeMem(i, readReg(i - chip8->I, chip8), chip8);
+                            }
+                            break;
+                        }
+                    case(0x65):
+                        {
+                            // LD Vx, [I]
+                            int x = GET_X(chip8->opcode);
+                            for (int i = chip8->I; i < (chip8->I+x); i++)
+                            {
+                                writeReg(i - chip8->I, readMem(i, chip8), chip8);
+                            }
+                            break;
+                        }
+                }
                 break;
             }
 

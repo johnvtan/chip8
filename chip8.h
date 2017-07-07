@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> // for memset
+#include <time.h>
+#include <SDL2/SDL.h>
 //#include "instructions.h"
 
 /* MACRO DEFINITIONS */
@@ -39,7 +41,7 @@ typedef struct
     unsigned char graphics[64 * 32];
     unsigned char delay;
     unsigned char sound;
-    unsigned short stack;
+    unsigned short stack[16];
     unsigned char sp;
 
     // keeps track of current opcode

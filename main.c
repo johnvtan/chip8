@@ -14,8 +14,8 @@ int main(int argc, char **argv)
 
     // forgot to malloc pointer, so it was uninitialized, which caused segfaults
     // when trying to memset memory and V
-    chip8state *chip8 = malloc(sizeof(chip8state));
-    chip8init(chip8);
+    chip8state chip8;
+    chip8init(&chip8);
     char *filename = argv[1];
    
     // implementing test cases for debug mode
@@ -24,13 +24,13 @@ int main(int argc, char **argv)
         if (strcmp(filename, "test") == 0)
         {
             printf("Running test cases...\n");
-            test(chip8);
+            test(&chip8);
             return 0;
         }
     }
 
     // if not test, then try programming and emulating w/ fetch-execute cycle
-    program(filename, chip8);
+    program(filename, &chip8);
     char c = 0;
     if (DEBUG)
     {
@@ -39,8 +39,8 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        fetch(chip8);
-        execute(chip8);
+        fetch(&chip8);
+        execute(&chip8);
         
         // Debug mode just makes the program step through the instructions
         // one at a time
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
         if (DEBUG)
         {
             //printf("Press enter to continue, anything else to exit: ");
-            printOpcode(chip8);
+            printOpcode(&chip8);
             c = getchar();
             if (c != '\n' && c != '\r')
             {
