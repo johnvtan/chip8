@@ -9,6 +9,7 @@ void chip8init(chip8state *chip8)
     memset(chip8->V, 0, 16 * sizeof(unsigned char));
     memset(chip8->memory, 0, 4096 * sizeof(unsigned char));
     memset(chip8->stack, 0, 16 * sizeof(unsigned short));
+    memset(chip8->graphics, 0, 64*32*sizeof(unsigned char));
     chip8->I = 0;
     chip8->pc = 0x200;
     chip8->delay = 0;
@@ -16,11 +17,13 @@ void chip8init(chip8state *chip8)
     chip8->sp = 0;
     chip8->opcode = 0;
     
-    // seeding rng
+    // seeding rng for RND instruction
     srand(time(NULL));
+
+    chip8->window = graphicsInit();
 }
 
-/* reads file into memory byte by byte */
+/* reads file into memory byte by byte then closes file */
 void program(char *filename, chip8state *chip8)
 {
     FILE *fp = fopen(filename, "r");
@@ -72,6 +75,7 @@ void execute(chip8state *chip8)
                             // Clear screen
                             memset(chip8->graphics, 0, 64*32*sizeof(unsigned char));
                             // TODO: call draw screen function to clear this out
+                            graphicsUpdate(chip8->graphics, chip8->window);
                             break;
                         }
                     case(0xE):
@@ -521,6 +525,7 @@ void printMemory(int address, int period, chip8state *chip8)
     }
 }
 
+/* prints current opcode */
 void printOpcode(chip8state *chip8)
 {
     printf("%04x\n", chip8->opcode);

@@ -2,11 +2,10 @@
 #include "chip8.h"
 #include "test.h"
 
-
 #ifndef DEBUG
 #define DEBUG 0
 #endif
-
+    
 int main(int argc, char **argv)
 {
     if (argc < 2)
@@ -42,7 +41,7 @@ int main(int argc, char **argv)
 
     uint64_t delta_us = 0;
     struct timespec start_tp, end_tp; // used for keeping time
-    clock_gettime(CLOCK_REALTIME, &start_tp);    
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start_tp);    
     
     /*
     int n_exe = 0;
@@ -57,7 +56,7 @@ int main(int argc, char **argv)
         //n_exe++;
         
         // calculating how much time has passed
-        clock_gettime(CLOCK_REALTIME, &end_tp);
+        clock_gettime(CLOCK_MONOTONIC_RAW, &end_tp);
 
         // checking if current time > 16666 us (ie, ~1/60 of 1 sec)
         delta_us = (end_tp.tv_sec - start_tp.tv_sec) * 1000000 + (end_tp.tv_nsec - start_tp.tv_nsec) / 1000;

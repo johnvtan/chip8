@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include <string.h> // for memset
 #include <time.h>
-#include <SDL2/SDL.h>
-//#include "instructions.h"
+#include "graphics.h"
 
 /* MACRO DEFINITIONS */
 // DEBUG stuff - used -DDEBUG flag when compiling to turn this on
@@ -38,7 +37,7 @@ typedef struct
     // I used for storing memory address - only lower 3 bytes used
     unsigned short I;
     unsigned short pc;
-    unsigned char graphics[64 * 32];
+    unsigned char graphics[64][32];
     unsigned char delay;
     unsigned char sound;
     unsigned short stack[16];
@@ -46,6 +45,9 @@ typedef struct
 
     // keeps track of current opcode
     unsigned short opcode;
+
+    // Also has pointer to its own screen
+    SDL_Window* window;
 } chip8state;
 
 /* main functions */
