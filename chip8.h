@@ -6,6 +6,7 @@
 #include <string.h> // for memset
 #include <time.h>
 #include "graphics.h"
+#include "input.h"
 
 /* MACRO DEFINITIONS */
 // DEBUG stuff - used -DDEBUG flag when compiling to turn this on
@@ -29,6 +30,8 @@
 
 typedef struct 
 {
+    // flag to tell if the game is running or we need to quit
+    int running;
     unsigned char memory[4096];
 
     // general purpose registers
@@ -46,9 +49,11 @@ typedef struct
     // keeps track of current opcode
     unsigned short opcode;
 
-    // Also has pointer to its own screen
-    SDL_Window* window;
+    // Also has pointer to its own renderer
     SDL_Renderer* renderer;
+
+    // keeping track of last pressed button
+    int keys[16];
 } chip8state;
 
 /* all the fonts (for 0-F) that need to be loaded into chip8 memory */

@@ -1,4 +1,4 @@
-OBJS = main.c chip8.c graphics.c test.c
+OBJS = main.c chip8.c graphics.c input.c test.c
 CC = gcc
 CFLAGS = -std=gnu99 -Wall -w
 LFLAGS = -lSDL2

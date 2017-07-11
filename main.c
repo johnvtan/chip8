@@ -40,12 +40,23 @@ int main(int argc, char **argv)
     uint64_t delta_us = 0;
     struct timespec start_tp, end_tp; // used for keeping time
     clock_gettime(CLOCK_MONOTONIC_RAW, &start_tp);    
-    
-    for (;;)
+    //SDL_Event event;
+
+    while (chip8.running)
     {
         // Delay needed so that the emulator doesn't run too fast
-        SDL_Delay(3);
+        SDL_Delay(2);
 
+        // poll last key
+        inputPollEvent(chip8.keys);
+      
+        for (int i = 0; i < 16; i++)
+        {
+            if (chip8.keys[i])
+            {
+                printf("Key %x pressed!\n", i);
+            }
+        }
         fetch(&chip8);
         execute(&chip8);
         

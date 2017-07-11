@@ -6,6 +6,7 @@ void chip8init(chip8state *chip8)
     //TODO: finish initialization
     // setting all registers, memory back to 0
     // memset for V works, but memset for memory fails. why?
+    chip8->running = 1;
     memset(chip8->V, 0, 16 * sizeof(unsigned char));
     memset(chip8->memory, 0, 4096 * sizeof(unsigned char));
     memset(chip8->stack, 0, 16 * sizeof(unsigned short));
@@ -27,6 +28,7 @@ void chip8init(chip8state *chip8)
     srand(time(NULL));
 
     chip8->renderer = graphicsInit();
+    memset(chip8->keys, 0, 16 * sizeof(int));
 }
 
 /* reads file into memory byte by byte then closes file */
@@ -363,7 +365,7 @@ void execute(chip8state *chip8)
                     Vy++;
                     
                     // wrap around the screen
-                    if (Vy > SCREEN_WIDTH)
+                    if (Vy > SCREEN_HEIGHT)
                     {
                         Vy = 0;
                     }
@@ -380,13 +382,22 @@ void execute(chip8state *chip8)
                 {
                     case(0xE):
                         {
-                            unhandledInstruction("SKP Vx", chip8);
+                            // SKP Vx - pc += 2 if Vx key pressed
+                            unsigned char Vx = readReg(GET_X(chip8->opcode), chip8);
+                            if (chip8->keys[Vx])
+                            {
+                                chip8->pc += 2;
+                            }
                             break;
                         }
                     case(1):
                         {
-                            unhandledInstruction("SKNP Vx", chip8);
-                            chip8->pc += 2;
+                            // SKNP Vx - pc += 2 if Vx not pressed
+                            unsigned char Vx = readReg(GET_X(chip8->opcode), chip8);
+                            if (chip8->keys[Vx] == 0)
+                            {
+                                chip8->pc += 2;
+                            }
                             break;
                         }
                     default:
@@ -410,7 +421,9 @@ void execute(chip8state *chip8)
                         }
                     case(0x0A):
                         {
-                            unhandledInstruction("LD Vx, K", chip8);
+                            // LD Vx, K - wait for key press and store value in 
+                            // Vx
+                            writeReg(GET_X(chip8->opcode), inputWaitEvent(), chip8);
                             break;
                         }
                     case(0x15):
@@ -436,7 +449,10 @@ void execute(chip8state *chip8)
                         }
                     case(0x29):
                         {
-                            unhandledInstruction("LD F, Vx", chip8);
+                            // LD F, Vx - set I to the location of sprite for 
+                            // digit Vx
+                            unsigned char Vx = readReg(GET_X(chip8->opcode), chip8);
+                            chip8->I = Vx * 5;
                             break;
                         }
                     case(0x33):
