@@ -14,8 +14,6 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    // forgot to malloc pointer, so it was uninitialized, which caused segfaults
-    // when trying to memset memory and V
     chip8state chip8;
     chip8init(&chip8);
     char *filename = argv[1];
@@ -43,17 +41,10 @@ int main(int argc, char **argv)
     struct timespec start_tp, end_tp; // used for keeping time
     clock_gettime(CLOCK_MONOTONIC_RAW, &start_tp);    
     
-    /*
-    int n_exe = 0;
-    chip8.delay = 200;
-    */
-    
-    while (1)
+    for (;;)
     {
         fetch(&chip8);
         execute(&chip8);
-       
-        //n_exe++;
         
         // calculating how much time has passed
         clock_gettime(CLOCK_MONOTONIC_RAW, &end_tp);
@@ -72,20 +63,13 @@ int main(int argc, char **argv)
             {
                 chip8.sound--;
             }
-            
            
-            /*
-            printf("# cycles: %d\t, delay: %d\n", n_exe, chip8.delay);
-            n_exe = 0;
-            */
-            // resetting count
             start_tp = end_tp;
         }
         
         // Debug mode just makes the program step through the instructions
-        // one at a time
-        // TODO: write more robust debug mode, with step, run to pc == x
-        // run until certain instruction, etc...
+        // one at a time - note that this will definitely mess up the timer, 
+        // since that checks the actual time that passes
         if (DEBUG)
         {
             //printf("Press enter to continue, anything else to exit: ");

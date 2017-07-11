@@ -17,6 +17,12 @@ void chip8init(chip8state *chip8)
     chip8->sp = 0;
     chip8->opcode = 0;
     
+    // now need to load the fonts into 0x00-0x1FF
+    for (int i = 0; i < 80; i++)
+    {
+        writeMem(i, chip8fonts[i], chip8);
+    }
+
     // seeding rng for RND instruction
     srand(time(NULL));
 
@@ -107,8 +113,6 @@ void execute(chip8state *chip8)
         case(3):
             {
                 // SE Vx, byte - pc += 2 if V[x] == kk
-                // TODO: check to make sure value of x is being retrieved correctly
-                // Make new MACRO - GET_X, GET_Y
                 unsigned int x = GET_X(chip8->opcode);
                 unsigned char kk = GET_KK(chip8->opcode);
                 if (readReg(x, chip8) == kk)
@@ -263,7 +267,7 @@ void execute(chip8state *chip8)
                           // SHL Vx, Vx = Vx << 1
                           unsigned char val = readReg(x, chip8) << 1;
 
-                          // VF stuff - is 0x80 correct? TODO
+                          // VF stuff - is 0x80 correct? 
                           if ((readReg(x, chip8) & 0x80) == 0x80)
                           {
                               writeReg(0xF, 1, chip8);
@@ -316,7 +320,57 @@ void execute(chip8state *chip8)
             }
         case(0xD):
             {
-                unhandledInstruction("DRW Vx, Vy, nibble", chip8);
+                // DXYN - Draw Vx, Vy, nibble
+                // reads n bytes from memory, starting at I and displays them
+                // at (Vx, Vy)
+                unsigned char byte;
+
+                unsigned char Vx = readReg(GET_X(chip8->opcode), chip8);
+                unsigned char Vy = readReg(GET_Y(chip8->opcode), chip8);
+
+                unsigned char xpos = 0;
+                
+                // this part will update the graphics array
+                // loop through memory to get each byte
+                for (int i = chip8->I; i <= chip8->I + lownib; i++)
+                {
+                    // retrieve the byte
+                    byte = readMem(i, chip8);
+
+                    // put the byte into the graphics starting at (Vx, Vy)
+                    for (int j = 0; j < 8; j++)
+                    {
+                        // checking for collision so we can set the VF flag
+                        if ((chip8->graphics[Vx + j][Vy] == 1) && (((byte >> (8 - j)) & 1)  > 0))
+                        {
+                            writeReg(0xF, 1, chip8);
+                        }
+
+                        // checking if we need to wrap around
+                        xpos = Vx + j;
+                        if (xpos > SCREEN_WIDTH)
+                        {
+                            xpos = xpos - SCREEN_WIDTH;
+                        }
+
+                        // right shift by (8-j) times, then logical and with 1
+                        chip8->graphics[xpos][Vy] ^= (byte >> (8 - j)) & 1;
+                    }
+                    
+                    // I think Vy should increment here to start drawing to the
+                    // next line
+                    Vy++;
+                    
+                    // wrap around the screen
+                    if (Vy > SCREEN_WIDTH)
+                    {
+                        Vy = 0;
+                    }
+                }
+                
+                // after we finish updating the graphics array, then we can 
+                // update the screen
+                graphicsUpdate(chip8->graphics, chip8->window);
                 break;
             }
         case(0xE):
