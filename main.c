@@ -41,11 +41,12 @@ int main(int argc, char **argv)
     while (chip8.running)
     {
         // Delay needed so that the emulator doesn't run too fast
-        SDL_Delay(2);
+        SDL_Delay(1);
 
         // poll last key
         inputPollEvent(chip8.keys);
       
+        /*
         for (int i = 0; i < 16; i++)
         {
             if (chip8.keys[i])
@@ -53,6 +54,7 @@ int main(int argc, char **argv)
                 printf("Key %x pressed!\n", i);
             }
         }
+        */
         fetch(&chip8);
         execute(&chip8);
         

@@ -335,6 +335,9 @@ void execute(chip8state *chip8)
 
                 unsigned char xpos = 0;
                 
+                // set collision flag to initially be 0
+                writeReg(0xF, 0, chip8);
+
                 // this part will update the graphics array
                 // loop through memory to get each byte
                 for (int i = chip8->I; i < chip8->I + lownib; i++)
@@ -343,28 +346,30 @@ void execute(chip8state *chip8)
                     byte = readMem(i, chip8);
 
                     // put the byte into the graphics starting at (Vx, Vy)
-                    for (int j = 0; j <= 8; j++)
+                    for (int j = 0; j < 8; j++)
                     {
-                        // checking for collision so we can set the VF flag
-                        // TODO: make sure this works
-                        if ((chip8->graphics[Vx + j][Vy] == 1) && (((byte >> (8 - j)) & 1)  > 0))
-                        {
-                            writeReg(0xF, 1, chip8);
-                        }
-
-                        // checking if we need to wrap around
+                        // setting x position and checking for wrapping
                         xpos = Vx + j;
                         if (xpos > SCREEN_WIDTH)
                         {
                             xpos = xpos - SCREEN_WIDTH;
                         }
 
-                        // right shift by (8-j) times, then logical and with 1
-                        chip8->graphics[xpos][Vy] ^= (byte >> (8 - j)) & 1;
+                        if (byte & (0x80 >> j))
+                        {
+                            // setting collision flag if pixel at this coord
+                            // is already 1
+                            if (chip8->graphics[xpos][Vy])
+                            {
+                                writeReg(0xF, 1, chip8);
+                            }
+
+                            // XOR toggles the bit
+                            chip8->graphics[xpos][Vy] = !chip8->graphics[xpos][Vy];
+                        }
                     }
                     
-                    // I think Vy should increment here to start drawing to the
-                    // next line
+                    // Vy increment to start drawing on next row
                     Vy++;
                     
                     // wrap around the screen
