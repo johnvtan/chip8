@@ -46,6 +46,55 @@ void test(chip8state *chip8)
 
     printf("8xyE\n");
     if (!test8xyE(chip8)) { fprintf(stderr, "8xyE test failed!\n"); exit(1); }
+    
+    printf("9xy0\n");
+    if (!test9xy0(chip8)) { fprintf(stderr, "9xy0 test failed!\n"); exit(1); }
+
+    printf("Annn\n");
+    if (!testAnnn(chip8)) { fprintf(stderr, "Annn test failed!\n"); exit(1); }
+
+    printf("Bnnn\n");
+    if (!testBnnn(chip8)) { fprintf(stderr, "Bnnn test failed!\n"); exit(1); }
+
+    printf("Cxkk\n");
+    if (!testCxkk(chip8)) { fprintf(stderr, "Cxkk test failed!\n"); exit(1); }
+
+    printf("Dxyn\n");
+    if (!testDxyn(chip8)) { fprintf(stderr, "Dxyn test failed!\n"); exit(1); }
+
+    printf("Ex9E\n");
+    if (!testEx9E(chip8)) { fprintf(stderr, "Ex9E test failed!\n"); exit(1); }
+
+    printf("ExA1\n");
+    if (!testExA1(chip8)) { fprintf(stderr, "ExA1 test failed!\n"); exit(1); }
+
+    printf("Fx07\n");
+    if (!testFx07(chip8)) { fprintf(stderr, "Fx07 test failed!\n"); exit(1); }
+
+    printf("Fx0A\n");
+    if (!testFx0A(chip8)) { fprintf(stderr, "Fx0A test failed!\n"); exit(1); }
+
+    printf("Fx15\n");
+    if (!testFx15(chip8)) { fprintf(stderr, "Fx15 test failed!\n"); exit(1); }
+
+    printf("Fx18\n");
+    if (!testFx18(chip8)) { fprintf(stderr, "Fx18 test failed!\n"); exit(1); }
+
+    printf("Fx1E\n");
+    if (!testFx1E(chip8)) { fprintf(stderr, "Fx1E test failed!\n"); exit(1); }
+
+    printf("Fx29\n");
+    if (!testFx29(chip8)) { fprintf(stderr, "Fx29 test failed\n"); exit(1); }
+
+    printf("Fx33\n");
+    if (!testFx33(chip8)) { fprintf(stderr, "Fx33 test failed!\n"); exit(1); }
+
+    printf("Fx55\n");
+    if (!testFx55(chip8)) { fprintf(stderr, "Fx55 test failed!\n"); exit(1); }
+
+    printf("Fx65\n");
+    if (!testFx65(chip8)) { fprintf(stderr, "Fx65 test failed!\n"); exit(1); }
+    
     printf("All tests pass!\n");
 }
 
@@ -286,4 +335,202 @@ int test8xyE(chip8state *chip8)
     writeReg(0, 0xF0, chip8);
     execute(chip8);
     return ret && (readReg(0, chip8) == 0xE0) && (readReg(0xF, chip8) == 1);
+}
+
+/* 9xy0 - SNE Vx, Vy */
+int test9xy0(chip8state *chip8)
+{
+    int ret;
+    chip8init(chip8);
+    chip8->opcode = 0x9230;
+
+    // case 1 - Vx = Vy
+    writeReg(2, 0x0F, chip8);
+    writeReg(3, 0x0F, chip8);
+    execute(chip8);
+    ret = (chip8->pc == 0x200);
+
+    // case 2 - Vx != Vy
+    writeReg(2, 0x0A, chip8);
+    execute(chip8);
+    return ret && (chip8->pc == 0x202);
+}
+
+/* Annn - LD I, addr */
+int testAnnn(chip8state *chip8)
+{
+    chip8init(chip8);
+    chip8->opcode = 0xA123;
+    execute(chip8);
+    return chip8->I == 0x123;
+}
+
+/* Bnnn - JP V0, addr */
+int testBnnn(chip8state *chip8)
+{
+    chip8init(chip8);
+    chip8->opcode = 0xB100;
+    writeReg(0, 0x10, chip8);
+    execute(chip8);
+    return chip8->pc == (0x10 + 0x100);
+}
+
+/* Cxkk - RND Vx, byte */
+int testCxkk(chip8state *chip8)
+{
+    // how to test randomness?
+    return 1;
+}
+
+/* Dxyn - DRW Vx, Vy, nibble */
+int testDxyn(chip8state *chip8)
+{
+    return 1;
+}
+
+/* Ex9E - SKP Vx */
+int testEx9E(chip8state *chip8)
+{
+    int ret;
+    chip8init(chip8);
+    chip8->opcode = 0xE09E;
+    writeReg(0, 1, chip8);
+
+    // case 1 - button held down
+    chip8->keys[1] = 1;
+    execute(chip8);
+    ret = (chip8->pc == 0x202);
+
+    // case 2 - button not held down
+    writeReg(0, 0xF, chip8);
+    execute(chip8);
+    return ret && (chip8->pc == 0x202);
+}
+
+/* ExA1 - SKNP Vx */
+int testExA1(chip8state *chip8)
+{
+    int ret;
+    chip8init(chip8);
+    chip8->opcode = 0xE0A1;
+    
+    // case 1 - button not held down
+    writeReg(0, 0xF, chip8);
+    chip8->keys[1] = 1;
+    execute(chip8);
+    ret = (chip8->pc == 0x202);
+
+    // case 2 - button held down
+    writeReg(0, 1, chip8);
+    execute(chip8);
+    
+    return ret && (chip8->pc == 0x202);
+}
+
+/* Fx07 - LD Vx, DT */
+int testFx07(chip8state *chip8)
+{
+    chip8init(chip8);
+    chip8->opcode = 0xF107;
+    chip8->delay = 0xF0;
+    writeReg(1, 0x01, chip8);
+    execute(chip8);
+    return readReg(1, chip8) == chip8->delay;
+}
+
+/* Fx0A - LD Vx, K */
+int testFx0A(chip8state *chip8)
+{
+    chip8init(chip8);
+    chip8->opcode = 0xF10A;
+    printf("Press 1...\n");
+    chip8->renderer = graphicsInit();
+    execute(chip8);
+    SDL_DestroyRenderer(chip8->renderer);
+    return readReg(1, chip8) == 1;
+}
+
+/* Fx15 - LD DT, Vx */
+int testFx15(chip8state *chip8)
+{
+    chip8init(chip8);
+    chip8->opcode = 0xF015;
+    writeReg(0, 0x20, chip8);
+    execute(chip8);
+    return chip8->delay == readReg(0, chip8);
+}
+
+/* Fx18 - LD ST, Vx */
+int testFx18(chip8state *chip8)
+{
+    chip8init(chip8);
+    chip8->opcode = 0xF018;
+    writeReg(0, 0x30, chip8);
+    execute(chip8);
+    return chip8->sound == readReg(0, chip8);
+}
+
+/* Fx1E - ADD I, Vx */
+int testFx1E(chip8state *chip8)
+{
+    chip8init(chip8);
+    chip8->opcode = 0xF11E;
+    chip8->I = 0x100;
+    writeReg(1, 0x12, chip8);
+    execute(chip8);
+    return chip8->I == (0x100 + 0x12);
+}
+
+/* Fx29 - LD F, Vx */
+int testFx29(chip8state *chip8)
+{
+    chip8init(chip8);
+    chip8->opcode = 0xF029;
+    writeReg(0, 0xE, chip8);
+    execute(chip8);
+    return chip8->I == 70;
+}
+
+/* Fx33 - LD B, Vx */
+int testFx33(chip8state *chip8)
+{
+    return 1;
+}
+
+/* Fx55 - LD [I], Vx */
+int testFx55(chip8state *chip8)
+{
+    int ret = 1;
+    chip8init(chip8);
+    chip8->opcode = 0xFF55;
+    for (int i = 0; i < 16; i++)
+    {
+        writeReg(i, i, chip8);
+    }
+    chip8->I = 0x355;
+    execute(chip8);
+    for (int j = 0; j <= 15; j++)
+    {
+        ret = ret && (readReg(j, chip8) == readMem(chip8->I + j, chip8));
+    }
+    return ret;
+}
+
+/* Fx65 - LD Vx, [I] */
+int testFx65(chip8state *chip8)
+{
+    int ret = 1;
+    chip8init(chip8);
+    chip8->opcode = 0xFF65;
+    chip8->I = 0x300;
+    for (int i = 0; i <= 0x0F; i++)
+    {
+        writeMem(chip8->I + i, i, chip8);
+    }
+    execute(chip8);
+    for (int j = 0; j <= 0xF; j++)
+    {
+        ret = ret && (readMem(chip8->I + j, chip8) == readReg(j, chip8));
+    }
+    return ret;
 }

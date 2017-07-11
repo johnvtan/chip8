@@ -18,6 +18,10 @@
 #define DEBUG_PRINT(...)  // do nothing if not in debug mode
 #endif
 
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+
 // GET_X, GET_Y cast as ints since they are used as indexes
 #define GET_X(opcode) (int) ((opcode & 0x0F00) >> 8)
 #define GET_Y(opcode) (int) ((opcode & 0x00F0) >> 4)

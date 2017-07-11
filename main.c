@@ -1,10 +1,6 @@
 #include <string.h>
 #include "chip8.h"
 #include "test.h"
-
-#ifndef DEBUG
-#define DEBUG 0
-#endif
     
 int main(int argc, char **argv)
 {

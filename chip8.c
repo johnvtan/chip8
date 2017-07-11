@@ -27,7 +27,10 @@ void chip8init(chip8state *chip8)
     // seeding rng for RND instruction
     srand(time(NULL));
 
-    chip8->renderer = graphicsInit();
+    if (!DEBUG)
+    {
+        chip8->renderer = graphicsInit();
+    }
     memset(chip8->keys, 0, 16 * sizeof(int));
 }
 
@@ -464,7 +467,7 @@ void execute(chip8state *chip8)
                         {
                             // LD [I], Vx
                             int x = GET_X(chip8->opcode);
-                            for (int i = chip8->I; i < (chip8->I+x); i++)
+                            for (int i = chip8->I; i <= (chip8->I+x); i++)
                             {
                                 writeMem(i, readReg(i - chip8->I, chip8), chip8);
                             }
@@ -474,7 +477,7 @@ void execute(chip8state *chip8)
                         {
                             // LD Vx, [I]
                             int x = GET_X(chip8->opcode);
-                            for (int i = chip8->I; i < (chip8->I+x); i++)
+                            for (int i = chip8->I; i <= (chip8->I+x); i++)
                             {
                                 writeReg(i - chip8->I, readMem(i, chip8), chip8);
                             }
