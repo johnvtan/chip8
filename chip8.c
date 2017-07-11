@@ -26,7 +26,7 @@ void chip8init(chip8state *chip8)
     // seeding rng for RND instruction
     srand(time(NULL));
 
-    chip8->window = graphicsInit();
+    chip8->renderer = graphicsInit();
 }
 
 /* reads file into memory byte by byte then closes file */
@@ -81,7 +81,7 @@ void execute(chip8state *chip8)
                             // Clear screen
                             memset(chip8->graphics, 0, 64*32*sizeof(unsigned char));
                             // TODO: call draw screen function to clear this out
-                            graphicsUpdate(chip8->graphics, chip8->window);
+                            graphicsUpdate(chip8->graphics, chip8->renderer);
                             break;
                         }
                     case(0xE):
@@ -332,15 +332,16 @@ void execute(chip8state *chip8)
                 
                 // this part will update the graphics array
                 // loop through memory to get each byte
-                for (int i = chip8->I; i <= chip8->I + lownib; i++)
+                for (int i = chip8->I; i < chip8->I + lownib; i++)
                 {
                     // retrieve the byte
                     byte = readMem(i, chip8);
 
                     // put the byte into the graphics starting at (Vx, Vy)
-                    for (int j = 0; j < 8; j++)
+                    for (int j = 0; j <= 8; j++)
                     {
                         // checking for collision so we can set the VF flag
+                        // TODO: make sure this works
                         if ((chip8->graphics[Vx + j][Vy] == 1) && (((byte >> (8 - j)) & 1)  > 0))
                         {
                             writeReg(0xF, 1, chip8);
@@ -370,7 +371,7 @@ void execute(chip8state *chip8)
                 
                 // after we finish updating the graphics array, then we can 
                 // update the screen
-                graphicsUpdate(chip8->graphics, chip8->window);
+                graphicsUpdate(chip8->graphics, chip8->renderer);
                 break;
             }
         case(0xE):
@@ -385,6 +386,7 @@ void execute(chip8state *chip8)
                     case(1):
                         {
                             unhandledInstruction("SKNP Vx", chip8);
+                            chip8->pc += 2;
                             break;
                         }
                     default:
@@ -476,7 +478,7 @@ void execute(chip8state *chip8)
 /* function to read from memory */
 unsigned char readMem(int address, chip8state *chip8)
 {
-    DEBUG_PRINT("Opcode: %04x, reading from address %x\n", chip8->opcode, address);
+    DEBUG_PRINT("Opcode: %04x; reading val 0x%x from address 0x%x\n", chip8->opcode, chip8->memory[address], address);
     if (address >= 0 && address <= 4096)
     {
         return chip8->memory[address];
@@ -505,7 +507,7 @@ void writeMem(int address, unsigned char val, chip8state *chip8)
 /* reads from register Vx */
 unsigned char readReg(int x, chip8state *chip8)
 {
-    DEBUG_PRINT("Opcode: %04x, reading from reg %x\n", chip8->opcode, x);
+    DEBUG_PRINT("Opcode: %04x, reading val 0x%x from reg 0x%x\n", chip8->opcode, chip8->V[x], x);
     if (x >= 0 && x <= 15)
     {
         return chip8->V[x];

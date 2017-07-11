@@ -48,6 +48,7 @@ typedef struct
 
     // Also has pointer to its own screen
     SDL_Window* window;
+    SDL_Renderer* renderer;
 } chip8state;
 
 /* all the fonts (for 0-F) that need to be loaded into chip8 memory */

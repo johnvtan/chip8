@@ -43,6 +43,9 @@ int main(int argc, char **argv)
     
     for (;;)
     {
+        // Delay needed so that the emulator doesn't run too fast
+        SDL_Delay(3);
+
         fetch(&chip8);
         execute(&chip8);
         
@@ -54,7 +57,6 @@ int main(int argc, char **argv)
 
         if ((delta_us) > 16666)
         {
-
             if (chip8.delay > 0)
             {
                 chip8.delay--;
@@ -70,6 +72,7 @@ int main(int argc, char **argv)
         // Debug mode just makes the program step through the instructions
         // one at a time - note that this will definitely mess up the timer, 
         // since that checks the actual time that passes
+        
         if (DEBUG)
         {
             //printf("Press enter to continue, anything else to exit: ");
@@ -81,6 +84,7 @@ int main(int argc, char **argv)
                 break;
             }
         }
+        
     }
         
     return 0;

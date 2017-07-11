@@ -10,7 +10,7 @@
 
 /* graphics functions only need to look at the graphics array, not whole chip8
  * struct */
-SDL_Window* graphicsInit(void);
-void graphicsUpdate(unsigned char graphics[SCREEN_WIDTH][SCREEN_HEIGHT], SDL_Window *window);
+SDL_Renderer* graphicsInit(void);
+void graphicsUpdate(unsigned char graphics[SCREEN_WIDTH][SCREEN_HEIGHT], SDL_Renderer *r);
 
 #endif

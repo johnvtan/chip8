@@ -1,10 +1,11 @@
 #include "graphics.h"
+#include <time.h>
 
 /* initializes window in SDL and returns pointer to it */
-SDL_Window* graphicsInit(void)
+SDL_Renderer* graphicsInit(void)
 {
    SDL_Window* window = NULL;
-
+   SDL_Renderer* r = NULL;
    if (SDL_Init(SDL_INIT_VIDEO) < 0)
    {
        printf("SDL couldn't initialize! SDL_Error: %s\n", SDL_GetError());
@@ -22,7 +23,6 @@ SDL_Window* graphicsInit(void)
        else
        {
        // Create the renderer
-       SDL_Renderer *r = NULL;
        r = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
        
        // set color to black
@@ -34,22 +34,18 @@ SDL_Window* graphicsInit(void)
        // render the rect then render rect to screen
        SDL_RenderFillRect(r, NULL);
        SDL_RenderPresent(r);
-
-       // destroy the renderer after we're done with it
-       SDL_DestroyRenderer(r);
        }
    }
 
-   return window;
+   return r;
 }
   
 /* updates the window to reflect the current graphics array */
-void graphicsUpdate(unsigned char graphics[SCREEN_WIDTH][SCREEN_HEIGHT], SDL_Window *window)
+void graphicsUpdate(unsigned char graphics[SCREEN_WIDTH][SCREEN_HEIGHT], SDL_Renderer *r)
 {
-    SDL_Renderer *r = NULL;
-    r = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_RenderClear(r);
-    
+    //SDL_Renderer *r = NULL;
+    //r = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    //SDL_RenderClear(r);
     SDL_Rect currentPixel;
     int index;
     for (int i = 0; i < SCREEN_WIDTH; i++)
@@ -75,10 +71,12 @@ void graphicsUpdate(unsigned char graphics[SCREEN_WIDTH][SCREEN_HEIGHT], SDL_Win
                 SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
             }
             SDL_RenderFillRect(r, &currentPixel);
-            SDL_RenderPresent(r);
+            //SDL_RenderPresent(r);
         }
     }
     
+    // Only render to screen at the end, otherwise this function takes too long
+    SDL_RenderPresent(r);
     // deallocate the surface
-    SDL_DestroyRenderer(r);
+    //SDL_DestroyRenderer(r);
 }
