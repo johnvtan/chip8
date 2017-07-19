@@ -149,6 +149,6 @@ unsigned char inputWaitEvent(void)
         }
     }
 
-    // should never get here!
+    // should never get here! 
     return 0;
 }

@@ -96,5 +96,6 @@ int main(int argc, char **argv)
         
     }
         
+    SDL_DestroyRenderer(chip8.renderer);
     return 0;
 }

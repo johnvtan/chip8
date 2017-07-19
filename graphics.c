@@ -1,5 +1,4 @@
 #include "graphics.h"
-#include <time.h>
 
 /* initializes window in SDL and returns pointer to it */
 SDL_Renderer* graphicsInit(void)

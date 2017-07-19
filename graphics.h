@@ -2,6 +2,7 @@
 #define GRAPHICS_H
 
 #include <SDL2/SDL.h>
+#include <time.h>
 
 /* macro definitions for screen size */
 #define SCALE 10
